@@ -18,6 +18,8 @@ import 'package:path/path.dart';
 import 'package:fast/core/action.dart';
 import 'package:fast/yaml_manager.dart';
 
+import '../logger.dart';
+
 class RunCommandAction implements Action {
   final String yamlCommandPath;
   final Directory workingDirectory;
@@ -29,16 +31,25 @@ class RunCommandAction implements Action {
   @override
   Future<void> execute() async {
     final yamlCommand = YamlManager.readerYamlCommandsFile(
-            normalize('${yamlCommandPath}/commands.yaml'))
+            normalize('$yamlCommandPath/commands.yaml'))
         .firstWhere((yamlCommand) => yamlCommand.key == commandName);
 
-    final splited = yamlCommand.command.split(' ');
-    final name = splited[0];
-
-    await FastProcessCLI().executeProcess(name,
-        splited.getRange(1, splited.length).toList(), workingDirectory.path);
+    for (var envCmd in yamlCommand.command.trim().split(' ** ')) {
+      // env splitter
+      final splited = envCmd.split(' ');
+      final name = splited[0];
+      final splited2 =
+          envCmd.replaceFirst(name, '').trim().split(' && '); // cmd splitter
+      for (var cmd in splited2) {
+        final cmdList = cmd.split(' ');
+        await FastProcessCLI()
+            .executeProcess(name, cmdList, workingDirectory.path);
+      }
+    }
   }
 
   @override
   String get succesMessage => 'Run command.';
 }
+
+// flutter pub add velocity_x && pub add get
