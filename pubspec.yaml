@@ -1,7 +1,7 @@
 name: fast
 description: An incredible command line interface for Flutter.
 version: 0.5.0
-homepage: https://github.com/pbissonho/fast.cli
+homepage: https://github.com/dev-ideausher/fast.cli
 # author: Pedro Bissonho <pedro.bissonho@gmail.com>
 
 executables:
