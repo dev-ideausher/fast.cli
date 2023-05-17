@@ -34,11 +34,7 @@ void main(List<String> arguments) async {
     final pluginName = arguments[1];
     await fastzCLI.setupCommandRunner(pluginName);
   } else {
-    await fastzCLI.addCommands([
-      ClearCommand(),
-      InstallPackageCommand(),
-      PluginCommand(pluginStorage)
-    ]);
+    fastzCLI.addCommands([ClearCommand(), InstallPackageCommand(), PluginCommand(pluginStorage)]);
   }
 
   await fastzCLI.run(arguments, loadPlugin);

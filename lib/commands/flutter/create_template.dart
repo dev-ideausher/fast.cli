@@ -26,8 +26,8 @@ class CreateTemplateCommand extends CommandBase {
   @override
   String get name => template.name;
 
-  CreateTemplateCommand({this.template}) {
-    template.args.forEach((arg) {
+  CreateTemplateCommand({required this.template}) {
+    template.args!.forEach((arg) {
       argParser.addOption(arg);
     });
   }
@@ -36,8 +36,8 @@ class CreateTemplateCommand extends CommandBase {
   Future<void> run() async {
     final argsMap = <String, String>{};
 
-    template.args.forEach((arg) {
-      final argResult = argResults[arg];
+    template.args!.forEach((arg) {
+      final argResult = argResults![arg];
 
       if (argResult != null) {
         argsMap[arg] = argResult;

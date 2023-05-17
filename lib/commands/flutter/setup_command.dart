@@ -41,7 +41,7 @@ class SetupCommand extends CommandBase {
   @override
   Future<void> run() async {
     validate(Contract('', ''));
-    final scaffoldName = argResults['scaffold'];
+    final scaffoldName = argResults!['scaffold'];
     final scaffold =
         YamlManager.loadScaffold(normalize('$scaffoldsPath/$scaffoldName'));
 

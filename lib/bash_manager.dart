@@ -5,9 +5,9 @@ import 'core/directory.dart';
 
 // Manages the creation of bash executables.
 class BashFileManager {
-  BashFileManager({this.filePath, this.gitCachePath}) {
-    gitCachePath ??= '${homePath()}/.fastcli/cache/git/';
-    filePath ??= '${homePath()}/.fastcli/bin';
+  BashFileManager({required this.filePath,required this.gitCachePath}) {
+    gitCachePath = '${homePath()}/.fastcli/cache/git/';
+    filePath = '${homePath()}/.fastcli/bin';
   }
 
   String filePath;

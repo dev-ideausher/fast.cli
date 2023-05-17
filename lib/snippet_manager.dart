@@ -6,17 +6,17 @@ import 'package:path/path.dart';
 import 'core/directory.dart';
 
 class ReplacerSnippet {
-  RegExp regex;
+  RegExp? regex;
   final String argName;
-  String value;
+  String? value;
 
   ReplacerSnippet(this.argName, [this.value]) {
     regex = RegExp('@$argName');
   }
 
   String replace(String string) {
-    if (regex.hasMatch(string)) {
-      return string.replaceAllMapped(regex, (mathe) => value);
+    if (regex!.hasMatch(string)) {
+      return string.replaceAllMapped(regex!, (match) => value ?? '');
     }
 
     return string;
@@ -32,8 +32,7 @@ List<ReplacerSnippet> createSnipReplacers(List<String> args) {
     final argUpperCase = '${arg[0].toUpperCase()}${arg.substring(1)}';
     replacers.add(ReplacerSnippet('$arg', '\${${index.toString()}:$arg}'));
     index++;
-    replacers.add(
-        ReplacerSnippet(argUpperCase, '\${${index.toString()}:$argUpperCase}'));
+    replacers.add(ReplacerSnippet(argUpperCase, '\${${index.toString()}:$argUpperCase}'));
     index++;
   }
 
@@ -50,11 +49,10 @@ String replacerSnipLine(String line, List<ReplacerSnippet> replacers) {
 }
 
 String replaceSnipData(String content, ReplacerSnippet replacer) {
-  String replaced;
-  final contains = replacer.regex.hasMatch(content);
+  String? replaced;
+  final contains = replacer.regex!.hasMatch(content);
   if (contains) {
-    replaced =
-        content.replaceAllMapped(replacer.regex, (mathe) => replacer.value);
+    replaced = content.replaceAllMapped(replacer.regex!, (mathe) => replacer.value!);
   }
 
   if (replaced == null) return content;
@@ -64,27 +62,28 @@ String replaceSnipData(String content, ReplacerSnippet replacer) {
 class SnippetFile {
   String fileName;
   final String prefix;
-  final List<int> excluded;
-  List<String> contentLines;
-  List<String> snippetContent;
-  List<String> body = <String>[];
+  final List<int>? excluded;
+  List<String>? contentLines;
+  List<String>? snippetContent;
+  List<String>? body = <String>[];
   String extension;
   String path;
 
-  SnippetFile(
-      {this.prefix,
-      this.excluded,
-      this.fileName,
-      this.path,
-      this.contentLines,
-      this.extension}) {
+  SnippetFile({
+    this.prefix = "",
+    this.excluded,
+    this.fileName = "",
+    this.path = "",
+    this.contentLines,
+    this.extension = "",
+  }) {
     snippetContent = [];
   }
 
   void createBody(List<ReplacerSnippet> replacers) {
     final linesReplaced = <String>[];
 
-    for (final line in contentLines) {
+    for (final line in contentLines!) {
       var lineReplaced = line;
       for (var replacer in replacers) {
         lineReplaced = replaceSnipData(lineReplaced, replacer);
@@ -93,16 +92,17 @@ class SnippetFile {
     }
 
     snippetContent = linesReplaced;
-    _addspaces();
+    _addSpaces();
   }
 
-  void _addspaces() async {
+  void _addSpaces() {
     final body = <String>[];
-    for (var i = 0; i < snippetContent.length; i++) {
-      if (!excluded.contains(i)) {
-        body.add('${snippetContent[i]}');
+    for (var i = 0; i < snippetContent!.length; i++) {
+      if (!excluded!.contains(i)) {
+        body.add('${snippetContent![i]}');
       }
     }
+    this.body = body;
   }
 }
 
@@ -115,8 +115,8 @@ class SnippetGenerator {
   SnippetGenerator(this.templates, this.templatesPath, this.globalSnippetsPath);
 
   void generateSnippedFile() async {
-    await _createSnippets();
-    await _createGlobalSnippedFile();
+    _createSnippets();
+    _createGlobalSnippedFile();
   }
 
   void _createGlobalSnippedFile() async {
@@ -126,16 +126,16 @@ class SnippetGenerator {
   }
 
   Future<List<SnippetFile>> _loadSnippetFiles(Template template) async {
-    final directory =
-        Directory(normalize('${templatesPath}/${template.name}_template'));
+    final directory = Directory(normalize('${templatesPath}/${template.name}_template'));
     final files = await directory.getAllSystemFiles();
     final snippetFiles = <SnippetFile>[];
 
     for (var file in files) {
       final content = await (file as File).readAsLines();
       final fileName = split(file.path).last;
-      final templateFileSnippet = template.templateSnippets
-          .firstWhere((item) => item.fileName == fileName, orElse: () => null);
+      final templateFileSnippet = template.templateSnippets!.firstWhere(
+        (item) => item.fileName == fileName,
+      );
 
       if (templateFileSnippet != null) {
         snippetFiles.add(SnippetFile(
@@ -156,13 +156,9 @@ class SnippetGenerator {
       final codeSnippets = <CodeSnippet>[];
 
       for (final snippetFile in snippetFiles) {
-        snippetFile.createBody(createSnipReplacers(template.args));
-        codeSnippets.add(CodeSnippet('${snippetFile.prefix}',
-            snippetConfig: SnippetConfig(
-                scope: 'dart',
-                prefix: '${snippetFile.prefix}',
-                description: 'test',
-                body: snippetFile.body)));
+        snippetFile.createBody(createSnipReplacers(template.args!));
+        codeSnippets
+            .add(CodeSnippet('${snippetFile.prefix}', snippetConfig: SnippetConfig(scope: 'dart', prefix: '${snippetFile.prefix}', description: 'test', body: snippetFile.body!)));
       }
 
       for (final codeSnippet in codeSnippets) {
@@ -173,22 +169,23 @@ class SnippetGenerator {
 }
 
 class CodeSnippet {
-  SnippetConfig snippetConfig;
+  SnippetConfig? snippetConfig;
   final String name;
+
   CodeSnippet(this.name, {this.snippetConfig});
 
   Map<String, dynamic> toJson() {
-    return snippetConfig.toJson();
+    return snippetConfig!.toJson();
   }
 }
 
 class SnippetConfig {
   String scope;
   String prefix;
-  List<String> body;
+  List<String>? body;
   String description;
 
-  SnippetConfig({this.scope, this.prefix, this.body, this.description});
+  SnippetConfig({this.scope="", this.prefix="", this.body, this.description=""});
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};

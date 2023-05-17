@@ -43,7 +43,7 @@ class SetupYaml implements Action {
       }, path: (path) {
         scaffoldYamlDependencies.add(PackageDependencySpec.path(path));
       }, hosted: (hosted) async {
-        await process(hosted);
+         process(hosted);
       });
     }
 
@@ -73,7 +73,7 @@ class SetupYaml implements Action {
     }
 
     final newHosted =
-        hosted.copyWith(version: Optional('^${package.latest.version}'));
+        hosted.copyWith(version: Optional('^${package.latest!.version}'));
 
     newHostedDependencies.add(PackageDependencySpec.hosted(newHosted));
   }

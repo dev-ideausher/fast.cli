@@ -9,7 +9,7 @@ import '../yaml_manager.dart';
 class PluginAddGitAction implements Action {
   final PluginStorage storage;
   final BashFileManager bashFileManager;
-  String _gitUrl;
+  String? _gitUrl;
 
   PluginAddGitAction(this.storage, this.bashFileManager);
 
@@ -19,14 +19,14 @@ class PluginAddGitAction implements Action {
 
   @override
   Future<void> execute() async {
-    final pathOnlyBaseName = basename(_gitUrl);
+    final pathOnlyBaseName = basename(_gitUrl??"");
     final repositoryName = withoutExtension(pathOnlyBaseName);
     final path = normalize('${bashFileManager.gitCachePath}/$repositoryName/');
 
-    await bashFileManager.cloneRepository(_gitUrl, path);
+    await bashFileManager.cloneRepository(_gitUrl??"", path);
 
     final yamlPlugin = YamlManager.readerYamlPluginFile('$path/plugin.yaml');
-    final plugin = Plugin(git: _gitUrl, path: path, name: yamlPlugin.name);
+    final plugin = Plugin(git: _gitUrl??"", path: path, name: yamlPlugin.name);
     await storage.add(plugin);
     await bashFileManager.createExecutable(yamlPlugin.name);
     logger.d('Plugin(${yamlPlugin.name}) - Resources successfully configured.');

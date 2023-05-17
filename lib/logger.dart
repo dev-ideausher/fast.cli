@@ -15,14 +15,14 @@
 import 'dart:convert';
 
 import 'package:logger/logger.dart';
-
 var logger = Logger(
-    filter: MyFilter(),
-    printer: MyPrettyPrinter(
-      methodCount: 0, // number of method calls to be displayed
-      errorMethodCount: 8, // number of method calls if stacktrace is provided
-      lineLength: 0, // width of the output
-    ));
+  filter: MyFilter(),
+  printer: MyPrettyPrinter(
+    methodCount: 0, // number of method calls to be displayed
+    errorMethodCount: 8, // number of method calls if stacktrace is provided
+    lineLength: 0, // width of the output
+  ),
+);
 
 class MyFilter extends LogFilter {
   @override
@@ -38,8 +38,8 @@ class AnsiColor {
   /// Reset all colors and options for current SGRs to terminal defaults.
   static const ansiDefault = '${ansiEsc}0m';
 
-  final int fg;
-  final int bg;
+  final int? fg;
+  final int? bg;
   final bool color;
 
   AnsiColor.none()
@@ -58,9 +58,9 @@ class AnsiColor {
   @override
   String toString() {
     if (fg != null) {
-      return '${ansiEsc}38;5;${fg}m';
+      return '${ansiEsc}38;5;${fg!}m';
     } else if (bg != null) {
-      return '${ansiEsc}48;5;${bg}m';
+      return '${ansiEsc}48;5;${bg!}m';
     } else {
       return '';
     }
@@ -74,9 +74,9 @@ class AnsiColor {
     }
   }
 
-  AnsiColor toFg() => AnsiColor.fg(bg);
+  AnsiColor toFg() => AnsiColor.fg(bg!);
 
-  AnsiColor toBg() => AnsiColor.bg(fg);
+  AnsiColor toBg() => AnsiColor.bg(fg!);
 
   /// Defaults the terminal's foreground color without altering the background.
   String get resetForeground => color ? '${ansiEsc}39m' : '';
@@ -110,25 +110,28 @@ class MyPrettyPrinter extends LogPrinter {
     this.lineLength = 120,
     this.colors = true,
   });
+
   @override
-  void log(LogEvent event) {
+  List<String> log(LogEvent event) {
     final messageStr = stringifyMessage(event.message);
 
-    String stackTraceStr;
+    String? stackTraceStr;
     if (event.stackTrace == null) {
       if (methodCount > 0) {
         stackTraceStr = formatStackTrace(StackTrace.current, methodCount);
       }
     } else if (errorMethodCount > 0) {
-      stackTraceStr = formatStackTrace(event.stackTrace, errorMethodCount);
+      stackTraceStr = formatStackTrace(event.stackTrace!, errorMethodCount);
     }
 
     final errorStr = event.error?.toString();
 
     formatAndPrint(event.level, messageStr, '', errorStr, stackTraceStr);
+
+    return [];
   }
 
-  String formatStackTrace(StackTrace stackTrace, int methodCount) {
+  String? formatStackTrace(StackTrace? stackTrace, int methodCount) {
     var lines = stackTrace.toString().split('\n');
 
     var formatted = <String>[];
@@ -136,7 +139,7 @@ class MyPrettyPrinter extends LogPrinter {
     for (var line in lines) {
       var match = stackTraceRegex.matchAsPrefix(line);
       if (match != null) {
-        if (match.group(2).startsWith('package:logger')) {
+        if (match.group(2)!.startsWith('package:logger')) {
           continue;
         }
         var newLine = ('#$count   ${match.group(1)} (${match.group(2)})');
@@ -167,7 +170,7 @@ class MyPrettyPrinter extends LogPrinter {
 
   AnsiColor _getLevelColor(Level level) {
     if (colors) {
-      return levelColors[level];
+      return levelColors[level]!;
     } else {
       return AnsiColor.none();
     }
@@ -176,9 +179,9 @@ class MyPrettyPrinter extends LogPrinter {
   AnsiColor _getErrorColor(Level level) {
     if (colors) {
       if (level == Level.wtf) {
-        return levelColors[Level.wtf].toBg();
+        return levelColors[Level.wtf]!.toBg();
       } else {
-        return levelColors[Level.error].toBg();
+        return levelColors[Level.error]!.toBg();
       }
     } else {
       return AnsiColor.none();
@@ -186,13 +189,13 @@ class MyPrettyPrinter extends LogPrinter {
   }
 
   Future<void> formatAndPrint(Level level, String message, String time,
-      String error, String stacktrace) async {
+      String? error, String? stacktrace) async {
     var color = _getLevelColor(level);
 
     if (error != null) {
       var errorColor = _getErrorColor(level);
       for (var line in error.split('\n')) {
-        println(
+        print(
           color('') +
               errorColor.resetForeground +
               errorColor(line) +
@@ -203,12 +206,12 @@ class MyPrettyPrinter extends LogPrinter {
 
     if (stacktrace != null) {
       for (var line in stacktrace.split('\n')) {
-        println('${color}$line');
+        print('${color}$line');
       }
     }
 
     for (var line in message.split('\n')) {
-      println(color('$line'));
+      print(color('$line'));
     }
   }
 }

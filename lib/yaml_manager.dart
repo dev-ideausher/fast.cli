@@ -38,8 +38,8 @@ class Dependency {
   final String name;
   String version;
 
-  Dependency(this.name, [this.version]) {
-    version ??= '';
+  Dependency(this.name, [this.version = ""]) {
+    version = '';
   }
 }
 
@@ -112,15 +112,15 @@ class YamlFile {
   final String content;
   final String extension;
 
-  YamlFile(this.name, {this.content, this.extension});
+  YamlFile(this.name, {this.content = "", this.extension = ""});
 }
 
 class Template {
   final String name;
   final String description;
   final String to;
-  final List<String> args;
-  final List<TemplateSnippet> templateSnippets;
+  final List<String>? args;
+  final List<TemplateSnippet>? templateSnippets;
   final String path;
 
   bool hasSnippets() {
@@ -128,10 +128,10 @@ class Template {
   }
 
   Template({
-    this.path,
-    this.description,
-    this.name,
-    this.to,
+    this.path = "",
+    this.description = "",
+    this.name = "",
+    this.to = "",
     this.args,
     this.templateSnippets,
   });
@@ -140,9 +140,9 @@ class Template {
 class TemplateSnippet {
   final String fileName;
   final String prefix;
-  final List<int> excludeLines;
+  final List<int>? excludeLines;
 
-  TemplateSnippet({this.fileName, this.prefix, this.excludeLines});
+  TemplateSnippet({this.fileName = "", this.prefix = "", this.excludeLines});
 }
 
 class Scaffold {
@@ -151,8 +151,7 @@ class Scaffold {
   final Structure testStructure;
   final bool copyFiles;
 
-  Scaffold(
-      {this.structure, this.testStructure, this.name, this.copyFiles = false});
+  Scaffold({required this.structure, required this.testStructure, required this.name, this.copyFiles = false});
 }
 
 // A predefined set of resources.
@@ -160,7 +159,7 @@ class YamlPlugin {
   final String name;
   final String description;
 
-  YamlPlugin({this.name, this.description});
+  YamlPlugin({required this.name, required this.description});
 }
 
 class YamlManager {
@@ -169,8 +168,7 @@ class YamlManager {
 
     final directory = Directory(folder);
     directory.listSync().forEach((element) {
-      templates
-          .add(YamlTemplateReader('${element.path}/template.yaml').reader());
+      templates.add(YamlTemplateReader('${element.path}/template.yaml').reader());
     });
 
     return templates;
@@ -242,7 +240,7 @@ class YamlManager {
 
 class YamlTemplateReader {
   final String path;
-  YamlReader yamlReader;
+  late YamlReader yamlReader;
 
   YamlTemplateReader(this.path) {
     yamlReader = YamlReader(path);
@@ -251,43 +249,44 @@ class YamlTemplateReader {
   Template reader() {
     try {
       final yamlData = yamlReader.reader();
-      final args =
-          (yamlData['args'] as YamlList).map((value) => '$value').toList();
+      final args = (yamlData['args'] as YamlList).map((value) => '$value').toList();
 
-      YamlList snippetsData;
+      YamlList? snippetsData;
       final snippets = <TemplateSnippet>[];
 
       try {
-        snippetsData = (yamlData['snippets'] as YamlList);
-        final listSnippetsData = snippetsData.toList();
+        snippetsData = yamlData['snippets'] as YamlList?;
+        if (snippetsData != null) {
+          final listSnippetsData = snippetsData.toList();
 
-        for (var item in listSnippetsData) {
-          final mapData = (item as YamlMap);
-          final templateSnippet = TemplateSnippet(
-              fileName: mapData['file'],
-              prefix: mapData['prefix'],
-              excludeLines: (mapData['excluded'] as YamlList)
-                  .map<int>((f) => f)
-                  .toList());
-          snippets.add(templateSnippet);
+          for (var item in listSnippetsData) {
+            final mapData = item as YamlMap;
+            final templateSnippet = TemplateSnippet(
+              fileName: mapData['file'] as String,
+              prefix: mapData['prefix'] as String,
+              excludeLines: (mapData['excluded'] as YamlList).map<int>((f) => f as int).toList(),
+            );
+            snippets.add(templateSnippet);
+          }
         }
       } catch (erro) {
         return Template(
           path: dirname(path),
-          name: yamlData['name'],
-          to: yamlData['to'],
+          name: yamlData['name'] as String,
+          to: yamlData['to'] as String,
           args: args,
-          description: yamlData['description'],
+          description: yamlData['description'] ?? "",
         );
       }
 
       return Template(
-          path: dirname(path),
-          name: yamlData['name'],
-          to: yamlData['to'],
-          args: args,
-          description: yamlData['description'],
-          templateSnippets: snippets);
+        path: dirname(path),
+        name: yamlData['name'] as String,
+        to: yamlData['to'] as String,
+        args: args,
+        description: yamlData['description'] ?? "",
+        templateSnippets: snippets,
+      );
     } catch (error) {
       throw FastException('''
 An error occurred while reading the template $path's file.

@@ -4,6 +4,8 @@ import 'bash_manager.dart';
 import 'core/directory.dart';
 
 class WindowsManager extends BashFileManager {
+  WindowsManager({required super.filePath, required super.gitCachePath});
+
   @override
   Future<void> removeExecutable(String name) async {
     final file = File('$filePath/$name.bat');

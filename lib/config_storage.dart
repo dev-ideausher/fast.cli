@@ -37,14 +37,14 @@ class PluginRepository {
 }
 
 class Plugin {
-  String name;
-  String path;
-  String git;
+  String? name;
+  String? path;
+  String? git;
 
-  Plugin({this.name, this.path, this.git});
+  Plugin({this.name = "", this.path = "", this.git = ""});
 
   bool isGit() {
-    return git.isNotEmpty;
+    return git!.isNotEmpty;
   }
 
   Plugin.fromJson(Map<String, dynamic> json) {
@@ -67,7 +67,7 @@ class Plugin {
 class PluginStorage {
   String _filePath = '${homePath()}/.fastcli/plugins.json';
 
-  PluginStorage([String filePath]) {
+  PluginStorage([String? filePath]) {
     if (filePath != null) _filePath = filePath;
   }
 

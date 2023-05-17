@@ -30,13 +30,12 @@ class InstallPackageCommand extends CommandBase {
 
   @override
   Future<void> run() async {
-    final packageName = argResults.rest[0];
-    final packageVersion = argResults['version'];
-    final isDev = argResults['dev'];
+    final packageName = argResults!.rest[0];
+    final packageVersion = argResults!['version'];
+    final isDev = argResults!['dev'];
 
-    final addPackageAction =
-        AddPackage(packageName, 'pubspec.yaml', isDev, packageVersion);
+    final addPackageAction = AddPackage(packageName, 'pubspec.yaml', isDev, packageVersion);
     await addPackageAction.execute();
-    await logger.d(addPackageAction.succesMessage);
+    logger.d(addPackageAction.succesMessage);
   }
 }

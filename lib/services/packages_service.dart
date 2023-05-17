@@ -25,17 +25,16 @@ class PackagesService {
     final url = '$pubUrl/$packageName';
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final map = data as Map;
+        final map = jsonDecode(response.body);
+        //  final map = data as Map;
         return Package.fromJson(map);
       }
       throw FastException('Not found package.');
     } catch (e) {
-      throw FastException(
-          '''An error occurs when picking up the package $packageName 
+      throw FastException('''An error occurs when picking up the package $packageName 
 Check that the package name is valid.
 ''');
     }
@@ -43,27 +42,33 @@ Check that the package name is valid.
 }
 
 class Package {
-  String name;
-  Version latest;
+  late String name;
+  Version? latest;
 
-  Package({name, latest, versions});
+  Package({required this.name, this.latest, versions});
 
-  Package.fromJson(Map<String, dynamic> json) {
-    name = json['name'];
-    latest = json['latest'] != null ? Version.fromJson(json['latest']) : null;
+  factory Package.fromJson(Map<String, dynamic> json) {
+    return Package(
+      name: json['name'] as String,
+      latest: json['latest'] != null ? Version.fromJson(json['latest'] as Map<String, dynamic>) : null,
+    );
   }
 }
+
 
 class Version {
-  String version;
-  String archiveUrl;
-  String published;
+  late String version;
+  late String archiveUrl;
+  late String published;
 
-  Version({version, pubspec, archiveUrl, published});
+  Version({required this.version, required this.archiveUrl, required this.published});
 
-  Version.fromJson(Map<String, dynamic> json) {
-    version = json['version'];
-    archiveUrl = json['archive_url'];
-    published = json['published'];
+  factory Version.fromJson(Map<String, dynamic> json) {
+    return Version(
+      version: json['version'] as String,
+      archiveUrl: json['archive_url'] as String,
+      published: json['published'] as String,
+    );
   }
 }
+

@@ -29,9 +29,9 @@ class CreateFolderStructure implements Action {
   }
 
   Future<void> createrDirectorys(List<Folder> folders, path) async {
-    await folders.forEach((folder) async {
+    await Future.wait(folders.map((folder) async {
       await createFolderDirectory(path, folder);
-    });
+    }));
   }
 
   Future<void> createFolderDirectory(String parentPath, Folder folder) async {

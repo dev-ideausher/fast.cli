@@ -19,7 +19,7 @@ import 'package:fast/core/fast_process.dart';
 import 'package:fast/logger.dart';
 
 class FlutterAppArgs {
-  final String name;
+  final String? name;
   String description;
   String org;
   final bool useKotlin;
@@ -34,8 +34,8 @@ class FlutterAppArgs {
     this.useKotlin = false,
     this.useSwift = false,
   }) {
-    description ??= '';
-    org ??= '';
+    description = '';
+    org = '';
   }
 }
 
@@ -55,7 +55,7 @@ class CreateProjectAction implements Action {
 
     args.addAll([
       '--project-name',
-      actionArgs.name,
+      actionArgs.name??"",
     ]);
 
     if (actionArgs.description.isEmpty) {

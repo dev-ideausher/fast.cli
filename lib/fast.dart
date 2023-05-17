@@ -43,7 +43,7 @@ class FastCLI {
       if (templatesPathExists) {
         final templates = YamlManager.loadTemplates(pathTemplates);
 
-        templates?.forEach((template) {
+        templates.forEach((template) {
           addCommand(CreateTemplateCommand(
             template: template,
           ));

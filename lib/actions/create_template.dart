@@ -26,21 +26,22 @@ class TemplateFile {
   String extension;
   String path;
 
-  TemplateFile({this.name, this.path, this.content, this.extension});
+  TemplateFile({this.name="", this.path="", this.content="", this.extension=""});
 }
 
 class CreateTemplateAction implements Action {
   final Template template;
-  Directory _templateFolderDirectory;
+  late Directory _templateFolderDirectory;
   final Map<String, String> argsMap;
-  List<TemplateFile> templateFiles;
+  List<TemplateFile> templateFiles = [];
+
   CreateTemplateAction(this.template, this.argsMap) {
     _templateFolderDirectory = Directory(template.path);
   }
 
   @override
   Future<void> execute() async {
-    final templateFiles = await readerTemplatesFiles();
+    templateFiles = await readTemplatesFiles();
     replacerTemplatesFile(argsMap, templateFiles);
 
     for (final template in templateFiles) {
@@ -52,7 +53,7 @@ class CreateTemplateAction implements Action {
     }
   }
 
-  Future<List<TemplateFile>> readerTemplatesFiles() async {
+  Future<List<TemplateFile>> readTemplatesFiles() async {
     final templatesFile = <TemplateFile>[];
     final systemFiles = await _templateFolderDirectory.getAllSystemFiles();
 
@@ -64,10 +65,11 @@ class CreateTemplateAction implements Action {
         final filePath = normalize('${template.to}/$relativePath');
 
         templatesFile.add(TemplateFile(
-            name: split(systemFile.path).last,
-            content: content,
-            path: filePath,
-            extension: extension(systemFile.path)));
+          name: split(systemFile.path).last,
+          content: content,
+          path: filePath,
+          extension: extension(systemFile.path),
+        ));
       }
     }
     return templatesFile;
@@ -90,3 +92,4 @@ class CreateTemplateAction implements Action {
   @override
   String get succesMessage => 'Create template action.';
 }
+

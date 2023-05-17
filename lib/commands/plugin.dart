@@ -26,21 +26,19 @@ import 'command_base.dart';
 
 class PluginCommand extends CommandBase {
   final PluginStorage storage;
-  BashFileManager bashFileManager;
+  late BashFileManager bashFileManager;
 
   @override
-  String get description => 'Managed plugins.';
+  String get description => 'Manage plugins.';
 
   @override
   String get name => 'plugin';
 
   PluginCommand(this.storage) {
-    BashFileManager bashFileManager;
-
     if (Platform.isLinux || Platform.isMacOS) {
-      bashFileManager = BashFileManager();
+      bashFileManager = BashFileManager(filePath: "", gitCachePath: "");
     } else if (Platform.isWindows) {
-      bashFileManager = WindowsManager();
+      bashFileManager = WindowsManager(gitCachePath: "", filePath: "");
     }
 
     addSubcommand(AddCommand(bashFileManager));
@@ -61,8 +59,7 @@ class AddCommand extends CommandBase {
 
   AddCommand(this.fileManager) {
     addSubcommand(AddPathCommand(PluginStorage(), fileManager));
-    addSubcommand(
-        AddGitCommand(PluginAddGitAction(PluginStorage(), fileManager)));
+    addSubcommand(AddGitCommand(PluginAddGitAction(PluginStorage(), fileManager)));
   }
 }
 
@@ -80,14 +77,12 @@ class AddPathCommand extends CommandBase {
 
   @override
   Future<void> run() async {
-    final path = argResults.rest[0];
-    final yamlPluginFile =
-        YamlManager.readerYamlPluginFile('$path/plugin.yaml');
+    final path = argResults!.rest[0];
+    final yamlPluginFile = YamlManager.readerYamlPluginFile('$path/plugin.yaml');
     final plugin = Plugin(git: '', path: path, name: yamlPluginFile.name);
     await storage.add(plugin);
     await bashFileManager.createExecutable(yamlPluginFile.name);
-    logger.d(
-        'Plugin(${yamlPluginFile.name}) - Resources successfully configured.');
+    logger.d('Plugin(${yamlPluginFile.name}) - Resources successfully configured.');
     logger.d('Executable: ${yamlPluginFile.name} - Globally configured');
   }
 }
@@ -105,7 +100,7 @@ class AddGitCommand extends CommandBase {
 
   @override
   Future<void> run() async {
-    final gitUrl = argResults.rest[0];
+    final gitUrl = argResults!.rest[0];
     action.setUrl(gitUrl);
     logger.d('Installing plugin...');
     await action.execute();
@@ -128,15 +123,14 @@ class RemovePluginCommand extends CommandBase {
 
   @override
   Future<void> run() async {
-    final pluginName = argResults['name'];
+    final pluginName = argResults?['name'] ?? "";
 
-    validate(
-        Contract<String>(pluginName, 'name')..isNotNull('Must be passed.'));
+    validate(Contract<String>(pluginName, 'name')..isNotNull('Must be passed.'));
 
     final plugin = await storage.readByName(pluginName);
     await storage.remove(pluginName);
     await bashFileManager.removeExecutable(pluginName);
-    await bashFileManager.removeCachedRepository(plugin.path);
+    await bashFileManager.removeCachedRepository(plugin.path ?? "");
     logger.d('Plugin removed successfully.');
   }
 }

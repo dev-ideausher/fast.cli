@@ -32,8 +32,7 @@ class SetupAction implements Action {
   @override
   Future<void> execute() async {
     final libPath = '$path/lib';
-    final createStructAction = CreateFolderStructure(
-        libPath, project.structure.mainFolder, 'Created /lib structure.');
+    final createStructAction = CreateFolderStructure(libPath, project.structure.mainFolder, 'Created /lib structure.');
 
     if (await Directory(libPath).existsFiles()) {
       if (force) {
@@ -47,8 +46,7 @@ ${runtimeType.toString()} failed. - Lib folder has data. Use --force to allow th
     } else {
       await Directory(libPath).clear();
       await createStructAction.execute();
-      await logger
-          .d('${runtimeType.toString()} finished. - $finishedDescription');
+      logger.d('${runtimeType.toString()} finished. - $finishedDescription');
     }
   }
 

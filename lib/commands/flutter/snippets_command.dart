@@ -54,7 +54,7 @@ class SnippetsCommand extends CommandBase {
     } else {
       throw FastException('Platform not support VS Code Generators');
     }
-    await SnippetGenerator(
+     SnippetGenerator(
             templates.where((template) => template.hasSnippets()).toList(),
             templatesPath,
             globalSnippetsPath)

@@ -20,13 +20,14 @@ import 'package:fast/services/packages_service.dart';
 
 class AddPackage implements Action {
   final String name;
-  final String version;
-  final bool isDev;
   final String yamlPath;
-  Optional _optionalVersion;
-  Package _package;
+  final bool isDev;
+  final String? version;
 
-  AddPackage(this.name, this.yamlPath, this.isDev, [this.version]);
+  Optional<String>? _optionalVersion;
+  Package? _package;
+
+  AddPackage(this.name, this.yamlPath, this.isDev, this._optionalVersion, [this.version]);
 
   @override
   Future<void> execute() async {
@@ -39,7 +40,7 @@ class AddPackage implements Action {
     _package = await PackagesService().fetchPackage(name);
 
     if (version == null) {
-      _optionalVersion = Optional<String>('^${_package.latest.version}');
+      _optionalVersion = Optional<String>('^${_package!.latest!.version}');
     } else {
       _optionalVersion = Optional<String>('^$version');
     }
@@ -48,13 +49,17 @@ class AddPackage implements Action {
       finalYaml = pubsYaml.copyWith(devDependencies: [
         ...pubsYaml.devDependencies,
         PackageDependencySpec.hosted(HostedPackageDependencySpec(
-            package: name, version: _optionalVersion))
+          package: name,
+          version: _optionalVersion ?? Optional.none(),
+        )),
       ]);
     } else {
       finalYaml = pubsYaml.copyWith(dependencies: [
         ...pubsYaml.dependencies,
         PackageDependencySpec.hosted(HostedPackageDependencySpec(
-            package: name, version: _optionalVersion))
+          package: name,
+          version: _optionalVersion ?? Optional.none(),
+        )),
       ]);
     }
 
@@ -64,6 +69,5 @@ class AddPackage implements Action {
   }
 
   @override
-  String get succesMessage =>
-      'Package $name at ${_optionalVersion.valueOr(() => '')} version added to the ${isDev ? 'devDependencies' : 'dependencies'}.';
+  String get succesMessage => 'Package $name at ${_optionalVersion ?? ""} version added to the ${isDev ? 'devDependencies' : 'dependencies'}.';
 }

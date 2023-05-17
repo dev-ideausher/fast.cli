@@ -48,19 +48,19 @@ class CreateCommand extends CommandBase {
 
   @override
   Future<void> run() async {
-    final appName = argResults['name'];
-    final scaffoldName = argResults['scaffold'];
-    final description = argResults['description'];
-    final useKotlin = argResults.wasParsed('kotlin');
-    final useSwift = argResults.wasParsed('swift');
-    final useAndroidX = argResults.wasParsed('androidx');
+    final appName = argResults!['name'];
+    final scaffoldName = argResults!['scaffold'];
+    final description = argResults!['description'];
+    final useKotlin = argResults?.wasParsed('kotlin');
+    final useSwift = argResults?.wasParsed('swift');
+    final useAndroidX = argResults?.wasParsed('androidx');
 
     final flutterScaffoldArgs = FlutterAppArgs(
-        useAndroidX: useAndroidX,
+        useAndroidX: useAndroidX!,
         name: appName,
         description: description,
-        useKotlin: useKotlin,
-        useSwift: useSwift);
+        useKotlin: useKotlin!,
+        useSwift: useSwift!);
 
     final scaffold =
         YamlManager.loadScaffold(normalize('$scaffoldsPath/$scaffoldName'));
@@ -85,7 +85,7 @@ class CreateCommand extends CommandBase {
       SetupYaml('$appName/pubspec.yaml',
           normalize('$scaffoldsPath/$scaffoldName/scaffold.yaml')),
       CopyScaffoldFiles('$scaffoldsPath/$scaffoldName/files', appName,
-          scaffold.copyFiles ?? false),
+          scaffold.copyFiles ),
     ]);
 
     await actionBuilder.execute();
