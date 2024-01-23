@@ -13,10 +13,11 @@
 //limitations under the License.
 
 import 'dart:io';
-import 'package:plain_optional/plain_optional.dart';
-import 'package:pubspec_yaml/pubspec_yaml.dart';
+
 import 'package:fast/core/action.dart';
 import 'package:fast/services/packages_service.dart';
+import 'package:plain_optional/plain_optional.dart';
+import 'package:pubspec_yaml/pubspec_yaml.dart';
 
 class SetupYaml implements Action {
   final String pubspecPath;
@@ -43,7 +44,7 @@ class SetupYaml implements Action {
       }, path: (path) {
         scaffoldYamlDependencies.add(PackageDependencySpec.path(path));
       }, hosted: (hosted) async {
-         process(hosted);
+        await process(hosted);
       });
     }
 
@@ -63,11 +64,12 @@ class SetupYaml implements Action {
     await pubspecFile.writeAsString(yamlData);
   }
 
-  void process(HostedPackageDependencySpec hosted) async {
+  Future<void> process(HostedPackageDependencySpec hosted) async {
     var pubService = PackagesService();
     Package package;
     try {
       package = await pubService.fetchPackage(hosted.package);
+      print('Package ${package.name}:${package.latest!.version} fetched.');
     } catch (error) {
       rethrow;
     }
