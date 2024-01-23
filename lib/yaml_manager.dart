@@ -13,8 +13,10 @@
 //limitations under the License.
 
 import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
+
 import 'core/exceptions.dart';
 import 'yaml_reader.dart';
 
@@ -151,7 +153,11 @@ class Scaffold {
   final Structure testStructure;
   final bool copyFiles;
 
-  Scaffold({required this.structure, required this.testStructure, required this.name, this.copyFiles = false});
+  Scaffold(
+      {required this.structure,
+      required this.testStructure,
+      required this.name,
+      this.copyFiles = false});
 }
 
 // A predefined set of resources.
@@ -168,7 +174,8 @@ class YamlManager {
 
     final directory = Directory(folder);
     directory.listSync().forEach((element) {
-      templates.add(YamlTemplateReader('${element.path}/template.yaml').reader());
+      templates
+          .add(YamlTemplateReader('${element.path}/template.yaml').reader());
     });
 
     return templates;
@@ -220,7 +227,7 @@ class YamlManager {
       name: name,
       structure: structure,
       testStructure: testStructure,
-      copyFiles: copyFiles,
+      copyFiles: copyFiles ?? true,
     );
   }
 
@@ -249,7 +256,8 @@ class YamlTemplateReader {
   Template reader() {
     try {
       final yamlData = yamlReader.reader();
-      final args = (yamlData['args'] as YamlList).map((value) => '$value').toList();
+      final args =
+          (yamlData['args'] as YamlList).map((value) => '$value').toList();
 
       YamlList? snippetsData;
       final snippets = <TemplateSnippet>[];
@@ -264,7 +272,9 @@ class YamlTemplateReader {
             final templateSnippet = TemplateSnippet(
               fileName: mapData['file'] as String,
               prefix: mapData['prefix'] as String,
-              excludeLines: (mapData['excluded'] as YamlList).map<int>((f) => f as int).toList(),
+              excludeLines: (mapData['excluded'] as YamlList)
+                  .map<int>((f) => f as int)
+                  .toList(),
             );
             snippets.add(templateSnippet);
           }
