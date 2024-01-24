@@ -53,8 +53,9 @@ class FastProcessCLI implements FastProcess {
   @override
   Future<bool> executeProcessShellPath(
       String name, List<String> args, String path) async {
-    final process =
-        await Process.start(name, args, runInShell: true).then((result) async {
+    final process = await Process.start(name, args,
+            runInShell: true, workingDirectory: path)
+        .then((result) async {
       await stdout.addStream(result.stdout);
       await stderr.addStream(result.stderr);
       return result;

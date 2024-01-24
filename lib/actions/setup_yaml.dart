@@ -19,6 +19,8 @@ import 'package:fast/services/packages_service.dart';
 import 'package:plain_optional/plain_optional.dart';
 import 'package:pubspec_yaml/pubspec_yaml.dart';
 
+import '../yaml_manager.dart';
+
 class SetupYaml implements Action {
   final String pubspecPath;
   final String scaffoldPath;
@@ -51,13 +53,15 @@ class SetupYaml implements Action {
     final pubsYaml = await pubspecFile.readAsStringSync().toPubspecYaml();
 
     final finalYaml = pubsYaml.copyWith(dependencies: [
-      ...newHostedDependencies,
       ...scaffoldYamlDependencies,
+      ...newHostedDependencies,
       ...pubsYaml.dependencies
     ], devDependencies: [
       ...scaffoldYaml.devDependencies,
       ...pubsYaml.devDependencies
-    ]);
+    ], customFields: {
+      ...scaffoldYaml.customFields[YamlScaffoldKeys.customFields]
+    });
 
     final yamlData = finalYaml.toYamlString();
 

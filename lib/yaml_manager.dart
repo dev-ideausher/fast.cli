@@ -27,6 +27,7 @@ class YamlScaffoldKeys {
   static String dependenciesKey = 'dependencies';
   static String dev_dependenciesKey = 'dev_dependencies';
   static String copy_filesKey = 'copy_files';
+  static String customFields = 'custom_fields';
 }
 
 class YamlCommand {

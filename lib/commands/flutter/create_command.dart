@@ -12,18 +12,22 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
+import 'dart:io';
+
 import 'package:fast/actions/action_builder.dart';
+import 'package:fast/actions/clear_structure.dart';
 import 'package:fast/actions/copy_scaffold_files.dart';
 import 'package:fast/actions/create_project_action.dart';
-import 'package:fast/core/fast_process.dart';
-import 'package:flunt_dart/flunt_dart.dart';
-import 'package:path/path.dart';
-import 'package:fast/yaml_manager.dart';
-import '../../logger.dart';
-import 'package:fast/actions/clear_structure.dart';
 import 'package:fast/actions/create_structure.dart';
+import 'package:fast/actions/execute_command.dart';
 import 'package:fast/actions/setup_yaml.dart';
 import 'package:fast/actions/show_folder_structure.dart';
+import 'package:fast/core/fast_process.dart';
+import 'package:fast/yaml_manager.dart';
+import 'package:flunt_dart/flunt_dart.dart';
+import 'package:path/path.dart';
+
+import '../../logger.dart';
 import '../command_base.dart';
 
 class CreateCommand extends CommandBase {
@@ -58,7 +62,7 @@ class CreateCommand extends CommandBase {
     final flutterScaffoldArgs = FlutterAppArgs(
         useAndroidX: useAndroidX!,
         name: appName,
-        description: description,
+        description: description ?? "",
         useKotlin: useKotlin!,
         useSwift: useSwift!);
 
@@ -84,8 +88,10 @@ class CreateCommand extends CommandBase {
       ShowFolderStructure(scaffold.testStructure.mainFolder),
       SetupYaml('$appName/pubspec.yaml',
           normalize('$scaffoldsPath/$scaffoldName/scaffold.yaml')),
-      CopyScaffoldFiles('$scaffoldsPath/$scaffoldName/files', appName,
-          scaffold.copyFiles ),
+      CopyScaffoldFiles(
+          '$scaffoldsPath/$scaffoldName/files', appName, scaffold.copyFiles),
+      ExecuteCommandsAction(Directory.current,
+          normalize('$scaffoldsPath/$scaffoldName/scaffold.yaml'), appName)
     ]);
 
     await actionBuilder.execute();
