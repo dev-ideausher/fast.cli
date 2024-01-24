@@ -42,8 +42,8 @@ class ExecuteCommandsAction implements Action {
             envCmd.replaceFirst(name, '').trim().split(' && '); // cmd splitter
         for (var cmd in splited2) {
           final cmdList = cmd.split(' ');
-          await FastProcessCLI()
-              .executeProcessShellPath(name, cmdList, appDirectory.path);
+          print('Running $name ${cmdList.join(' ')}');
+          await FastProcess().executeProcess(name, cmdList, appDirectory.path);
         }
       }
     }

@@ -55,7 +55,7 @@ class CreateProjectAction implements Action {
 
     args.addAll([
       '--project-name',
-      actionArgs.name??"",
+      actionArgs.name ?? "",
     ]);
 
     if (actionArgs.description.isEmpty) {
