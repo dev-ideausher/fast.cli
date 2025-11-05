@@ -14,9 +14,13 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'core/home_path.dart';
+import 'package:fast/core/exceptions.dart';
+import 'package:fast/core/result.dart';
+import 'package:fast/services/config_service.dart';
 
+/// Repository for managing plugin data serialization/deserialization.
 class PluginRepository {
+  /// Parses plugins from JSON data.
   List<Plugin> getAll(Map<String, dynamic> json) {
     final plugins = <Plugin>[];
     if (json['plugins'] != null) {
@@ -27,90 +31,194 @@ class PluginRepository {
     return plugins;
   }
 
+  /// Converts plugins to JSON storage format.
   Map<String, dynamic> toStorage(List<Plugin> models) {
     final data = <String, dynamic>{};
-    if (models != null) {
-      data['plugins'] = models.map((v) => v.toJson()).toList();
-    }
+    data['plugins'] = models.map((v) => v.toJson()).toList();
     return data;
   }
 }
 
+/// Represents a plugin configuration.
+/// 
+/// A plugin can be loaded from a local path or a Git repository.
 class Plugin {
-  String? name;
-  String? path;
-  String? git;
+  final String name;
+  final String path;
+  final String git;
 
-  Plugin({this.name = "", this.path = "", this.git = ""});
+  Plugin({
+    required this.name,
+    required this.path,
+    this.git = '',
+  });
 
-  bool isGit() {
-    return git!.isNotEmpty;
+  /// Returns true if this plugin is loaded from a Git repository.
+  bool get isGit => git.isNotEmpty;
+
+  /// Creates a Plugin from JSON data.
+  factory Plugin.fromJson(Map<String, dynamic> json) {
+    return Plugin(
+      name: json['name'] ?? '',
+      path: json['path'] ?? '',
+      git: json['git'] ?? '',
+    );
   }
 
-  Plugin.fromJson(Map<String, dynamic> json) {
-    name = json['name'];
-    path = json['path'];
-    git = json['git'];
-  }
-
+  /// Converts the plugin to JSON format.
   Map<String, dynamic> toJson() {
-    final data = <String, dynamic>{};
-    data['name'] = name;
-    data['path'] = path;
-    data['git'] = git;
-    return data;
+    return {
+      'name': name,
+      'path': path,
+      'git': git,
+    };
   }
+
+  /// Creates a copy of this plugin with updated fields.
+  Plugin copyWith({
+    String? name,
+    String? path,
+    String? git,
+  }) {
+    return Plugin(
+      name: name ?? this.name,
+      path: path ?? this.path,
+      git: git ?? this.git,
+    );
+  }
+
+  @override
+  String toString() => 'Plugin(name: $name, path: $path, git: ${git.isNotEmpty ? git : 'local'})';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Plugin &&
+          runtimeType == other.runtimeType &&
+          name == other.name;
+
+  @override
+  int get hashCode => name.hashCode;
 }
 
-// Manages resources of the plugins that will be added to the project.
-// Provides methods for adding and removing lugins.
+/// Manages plugin storage and persistence.
+/// 
+/// Provides methods for adding, removing, and querying plugins.
+/// Uses ConfigService for path management.
 class PluginStorage {
-  String _filePath = '${homePath()}/.fastcli/plugins.json';
+  final ConfigService _configService;
+  late final String _filePath;
 
-  PluginStorage([String? filePath]) {
-    if (filePath != null) _filePath = filePath;
+  /// Creates a new PluginStorage instance.
+  /// 
+  /// [filePath] - Optional custom file path. Defaults to config directory.
+  /// [configService] - Optional config service. Defaults to singleton.
+  PluginStorage([String? filePath, ConfigService? configService])
+      : _configService = configService ?? ConfigService() {
+    _filePath = filePath ?? _configService.getPluginsConfigPath();
   }
 
+  /// Reads a plugin by name.
+  /// 
+  /// Throws [PluginException] if the plugin is not found.
   Future<Plugin> readByName(String name) async {
-    final plugin = await read();
-    return plugin.firstWhere((element) => element.name == name);
+    final plugins = await read();
+    try {
+      return plugins.firstWhere((element) => element.name == name);
+    } catch (e) {
+      throw PluginException('Plugin not found: $name');
+    }
   }
 
+  /// Reads all plugins from storage.
+  /// 
+  /// Returns an empty list if the storage file doesn't exist or is empty.
   Future<List<Plugin>> read() async {
     final file = File(_filePath);
     if (!await file.exists()) {
       return <Plugin>[];
     }
 
-    final fileContents = await file.readAsString();
-    if (fileContents.isEmpty) {
-      return <Plugin>[];
-    }
+    try {
+      final fileContents = await file.readAsString();
+      if (fileContents.trim().isEmpty) {
+        return <Plugin>[];
+      }
 
-    final data = await json.decode(fileContents);
-    final plugins = PluginRepository().getAll(data);
-    return plugins;
+      final data = json.decode(fileContents) as Map<String, dynamic>;
+      return PluginRepository().getAll(data);
+    } catch (e) {
+      throw PluginException(
+        'Failed to read plugins from storage: $e',
+      );
+    }
   }
 
-  Future<void> write(List<Plugin> plugin) async {
-    final file = File(_filePath);
-    if (!await file.exists()) {
-      await file.create();
+  /// Writes plugins to storage.
+  /// 
+  /// Creates the directory structure if it doesn't exist.
+  Future<void> write(List<Plugin> plugins) async {
+    try {
+      // Ensure config directory exists
+      final configResult = await _configService.ensureConfigDir();
+      if (configResult.isError) {
+        final error = configResult as Error<void>;
+        throw PluginException(
+          'Failed to create config directory: ${error.message}',
+          error.exception,
+        );
+      }
+
+      final file = File(_filePath);
+      final parentDir = file.parent;
+      if (!await parentDir.exists()) {
+        await parentDir.create(recursive: true);
+      }
+
+      final data = PluginRepository().toStorage(plugins);
+      await file.writeAsString(
+        const JsonEncoder.withIndent('  ').convert(data),
+      );
+    } catch (e) {
+      if (e is PluginException) rethrow;
+      throw PluginException('Failed to write plugins to storage: $e');
     }
-    final data = PluginRepository().toStorage(plugin);
-    await file.writeAsString(json.encode(data));
   }
 
-  Future<void> add(Plugin model) async {
+  /// Adds or updates a plugin in storage.
+  /// 
+  /// If a plugin with the same name exists, it will be replaced.
+  Future<void> add(Plugin plugin) async {
     final plugins = await read();
-    plugins.removeWhere((element) => element.name == model.name);
-    plugins.add(model);
+    plugins.removeWhere((element) => element.name == plugin.name);
+    plugins.add(plugin);
     await write(plugins);
   }
 
-  Future<void> remove(String name) async {
+  /// Removes a plugin from storage by name.
+  /// 
+  /// Returns true if the plugin was removed, false if it didn't exist.
+  Future<bool> remove(String name) async {
     final plugins = await read();
+    final initialCount = plugins.length;
     plugins.removeWhere((element) => element.name == name);
-    await write(plugins);
+    
+    if (plugins.length < initialCount) {
+      await write(plugins);
+      return true;
+    }
+    return false;
+  }
+
+  /// Checks if a plugin exists.
+  Future<bool> exists(String name) async {
+    final plugins = await read();
+    return plugins.any((plugin) => plugin.name == name);
+  }
+
+  /// Gets the count of stored plugins.
+  Future<int> count() async {
+    final plugins = await read();
+    return plugins.length;
   }
 }
