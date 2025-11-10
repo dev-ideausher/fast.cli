@@ -3,7 +3,7 @@ import 'dart:io';
 import 'core/home_path.dart';
 import 'core/directory.dart';
 
-// Manages the creation of bash executables.
+  // Manages the creation of bash executables.
 class BashFileManager {
   BashFileManager({required this.filePath,required this.gitCachePath}) {
     gitCachePath = '${homePath()}/.fastcli/cache/git/';
