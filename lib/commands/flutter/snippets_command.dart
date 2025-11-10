@@ -15,7 +15,7 @@
 import 'dart:io';
 import 'package:fast/core/home_path.dart';
 import 'package:fast/logger.dart';
-import 'package:flunt_dart/flunt_dart.dart';
+import 'package:fast/core/validation.dart';
 import '../../config_storage.dart';
 import '../../core/exceptions.dart';
 import '../../snippet_manager.dart';

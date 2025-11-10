@@ -14,7 +14,7 @@
 
 import 'package:args/command_runner.dart';
 import 'package:fast/core/exceptions.dart';
-import 'package:flunt_dart/flunt_dart.dart';
+import 'package:fast/core/validation.dart';
 import '../logger.dart';
 
 /// Base class for all Fast CLI commands.

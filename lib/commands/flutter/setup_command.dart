@@ -15,7 +15,7 @@
 import 'package:fast/actions/action_builder.dart';
 import 'package:fast/actions/create_structure.dart';
 import 'package:fast/actions/setup_yaml.dart';
-import 'package:flunt_dart/flunt_dart.dart';
+import 'package:fast/core/validation.dart';
 import 'package:fast/actions/show_folder_structure.dart';
 import 'package:path/path.dart';
 import '../../logger.dart';

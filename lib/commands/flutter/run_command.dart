@@ -15,7 +15,7 @@
 import 'dart:io';
 
 import 'package:fast/logger.dart';
-import 'package:flunt_dart/flunt_dart.dart';
+import 'package:fast/core/validation.dart';
 import 'package:fast/actions/run_command.dart';
 
 import '../command_base.dart';

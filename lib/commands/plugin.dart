@@ -19,7 +19,7 @@ import 'package:fast/bash_manager.dart';
 import 'package:fast/config_storage.dart';
 import 'package:fast/windows_manager.dart';
 import 'package:fast/yaml_manager.dart';
-import 'package:flunt_dart/flunt_dart.dart';
+import 'package:fast/core/validation.dart';
 
 import '../logger.dart';
 import 'command_base.dart';
@@ -130,7 +130,7 @@ class RemovePluginCommand extends CommandBase {
     final plugin = await storage.readByName(pluginName);
     await storage.remove(pluginName);
     await bashFileManager.removeExecutable(pluginName);
-    await bashFileManager.removeCachedRepository(plugin.path ?? "");
+    await bashFileManager.removeCachedRepository(plugin.path);
     logger.d('Plugin removed successfully.');
   }
 }

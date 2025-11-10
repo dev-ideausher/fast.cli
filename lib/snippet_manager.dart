@@ -137,15 +137,13 @@ class SnippetGenerator {
         (item) => item.fileName == fileName,
       );
 
-      if (templateFileSnippet != null) {
-        snippetFiles.add(SnippetFile(
-            excluded: templateFileSnippet.excludeLines,
-            prefix: templateFileSnippet.prefix,
-            fileName: fileName,
-            contentLines: content,
-            path: file.path,
-            extension: extension(file.path)));
-      }
+      snippetFiles.add(SnippetFile(
+          excluded: templateFileSnippet.excludeLines,
+          prefix: templateFileSnippet.prefix,
+          fileName: fileName,
+          contentLines: content,
+          path: file.path,
+          extension: extension(file.path)));
     }
     return snippetFiles;
   }
