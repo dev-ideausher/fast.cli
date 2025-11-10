@@ -16,12 +16,18 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:fast/commands/flutter/install_package.dart';
 import 'package:fast/commands/flutter/clear_command.dart';
+import 'package:fast/commands/version_command.dart';
 import 'package:fast/commands/plugin.dart';
 import 'package:fast/config_storage.dart';
 import 'package:fast/fast.dart';
 import 'package:fast/logger.dart';
 
 void main(List<String> arguments) async {
+  // Support global --version/-v flag
+  if (arguments.contains('--version') || arguments.contains('-v')) {
+    stdout.writeln(FastVersion.versionString);
+    exit(0);
+  }
   final commandRunner = CommandRunner(
     'fast',
     'An incredible command line interface for Flutter.',
@@ -41,6 +47,7 @@ void main(List<String> arguments) async {
       await fastCLI.setupCommandRunner(pluginName);
     } else {
       fastCLI.addCommands([
+        VersionCommand(),
         ClearCommand(),
         InstallPackageCommand(),
         PluginCommand(pluginStorage),
