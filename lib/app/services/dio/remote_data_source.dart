@@ -17,7 +17,7 @@ abstract class RemoteDataSource {
     Response response, {
     T Function(dynamic)? parser,
   }) {
-    return ApiResponse.fromResponse<T>(response, parser);
+    return ApiResponse.fromResponse(response, parser);
   }
 
   /// Handle errors and convert to ApiResponse

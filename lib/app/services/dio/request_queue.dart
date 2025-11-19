@@ -25,7 +25,7 @@ class QueuedRequest<T> {
   }) : timestamp = timestamp ?? DateTime.now();
 
   int get retryCount => _retryCount;
-  bool get canRetry => maxRetries == null || _retryCount < maxRetries;
+  bool get canRetry => maxRetries == null || _retryCount < (maxRetries??0);
 
   void incrementRetry() {
     _retryCount++;

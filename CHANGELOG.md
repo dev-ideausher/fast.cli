@@ -1,4 +1,11 @@
 
+## 0.6.0
+- Migrated project to full null-safety.
+- Added advanced architecture (Result types, command chaining, caching, config service).
+- Added interactive prompts, dry-run mode, progress indicators, transactional file ops.
+- Improved plugin validation, error handling, logging, documentation, README overhaul.
+- Replaced git dependency with hosted `flunt_dart` package.
+
 ## 0.5.0
 - Updated readme
 - Fix issues
